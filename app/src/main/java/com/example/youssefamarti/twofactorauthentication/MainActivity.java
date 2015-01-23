@@ -1,5 +1,6 @@
 package com.example.youssefamarti.twofactorauthentication;
 
+// Import
 import com.example.youssefamarti.twofactorauthentication.CommonUtilities;
 
 import java.io.BufferedReader;
@@ -23,13 +24,14 @@ import android.widget.TextView;
 
 import com.google.android.gcm.GCMRegistrar;
 
-@TargetApi(Build.VERSION_CODES.GINGERBREAD)
+// Activity which will display the received data
 public class MainActivity extends Activity {
 
-    private String TAG = "** GCMPushDEMOAndroid**";
-    private TextView mDisplay;
-    String regId = "";
+    private String TAG = "** GCMPushDEMOAndroid**"; // Tag ID as String
+    private TextView mDisplay; // Label which will output received data
+    String regId = ""; // Regisration ID
 
+    // Method which creates the layout
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -68,10 +70,12 @@ public class MainActivity extends Activity {
         GCMRegistrar.unregister(this);
     }
 
+    // Background process class
     public class sendIdOnOverServer extends AsyncTask<string string="" void=""> {
 
         ProgressDialog pd = null;
 
+        // This method executes code before the background task starts
         @Override
         protected void onPreExecute() {
             pd = ProgressDialog.show(MainActivity.this, "Please wait",
@@ -80,6 +84,7 @@ public class MainActivity extends Activity {
 
         }
 
+        // Background process which won't interrupt the UI thread
         @Override
         protected String doInBackground(String... params) {
             try {
@@ -108,6 +113,7 @@ public class MainActivity extends Activity {
 
         }
 
+        // Method which executes code when the background process has finished
         @Override
         protected void onPostExecute(String result) {
             pd.dismiss();
@@ -117,6 +123,3 @@ public class MainActivity extends Activity {
     }
 
 }
-
-
-

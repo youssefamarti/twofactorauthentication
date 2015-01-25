@@ -1,125 +1,126 @@
 package com.example.youssefamarti.twofactorauthentication;
 
-// Import
-import com.example.youssefamarti.twofactorauthentication.CommonUtilities;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
-
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpParams;
-
-import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.TextView;
+import com.google.android.gms.gcm.GoogleCloudMessaging;
 
-import com.google.android.gcm.GCMRegistrar;
+
 
 // Activity which will display the received data
 public class MainActivity extends Activity {
 
-    private String TAG = "** GCMPushDEMOAndroid**"; // Tag ID as String
-    private TextView mDisplay; // Label which will output received data
-    String regId = ""; // Regisration ID
 
+
+    private String TAG = "** GCMPushDEMOAndroid**"; // Tag ID as String
+    private TextView mDisplay;                      // Label which will output received data
+    String regId = "";                              // Regisration ID
+    GoogleCloudMessaging gcm;
     // Method which creates the layout
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        checkNotNull(CommonUtilities.SENDER_ID, "SENDER_ID");
-        GCMRegistrar.checkDevice(this);
-        GCMRegistrar.checkManifest(this);
 
-        mDisplay = (TextView) findViewById(R.id.textView1);
 
-        regId = GCMRegistrar.getRegistrationId(this);
-
-        if (regId.equals("")) {
-            GCMRegistrar.register(this, SENDER_ID);
-        } else {
-            Log.v(TAG, "Already registered");
+        gcm = GoogleCloudMessaging.getInstance(this);
+        try {
+           regId = gcm.register(CommonUtilities.getSenderId(this));
+        if(regId.isEmpty())
+            registerInBackground();
+            //if device isn't reg it will reg in background thread with gcm
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        /**
-         * call asYnc Task
-         */
-        new sendIdOnOverServer().execute();
+
+        mDisplay = (TextView)findViewById(R.id.ABC);
         mDisplay.setText("RegId=" + regId);
     }
 
-    private void checkNotNull(Object reference, String name) {
-        if (reference == null) {
-            throw new NullPointerException(getString(R.string.error_config,
-                    name));
-        }
+    /**
+     * Registers the application with GCM servers asynchronously.
+     * <p>
+     * Stores the registration ID and app versionCode in the application's
+     * shared preferences.
+     */
+    private void registerInBackground() {
+        new AsyncTask<String, Void, String>() {
+            @Override
+            protected String doInBackground(String[] params) {
+                String msg = "";
+                try {
+                    if (gcm == null) {
+                        gcm = GoogleCloudMessaging.getInstance(MainActivity.this);
+                    }
+                    regId = gcm.register(CommonUtilities.getSenderId(MainActivity.this));
+                    msg = "Device registered, registration ID=" + regId;
 
-    }
+                    // You should send the registration ID to your server over HTTP,
+                    // so it can use GCM/HTTP or CCS to send messages to your app.
+                    // The request to your server should be authenticated if your app
+                    // is using accounts.
+                    /*
+                    ****** sendRegistrationIdToBackend(); ******
+                    */
+                    // *** No code yet for sending register ***
 
-    @Override
-    protected void onPause() {
-        super.onPause();
-        GCMRegistrar.unregister(this);
-    }
+                    // For this demo: we don't need to send it because the device
+                    // will send upstream messages to a server that echo back the
+                    // message using the 'from' address in the message.
 
-    // Background process class
-    public class sendIdOnOverServer extends AsyncTask<string string="" void=""> {
-
-        ProgressDialog pd = null;
-
-        // This method executes code before the background task starts
-        @Override
-        protected void onPreExecute() {
-            pd = ProgressDialog.show(MainActivity.this, "Please wait",
-                    "Loading please wait..", true);
-            pd.setCancelable(true);
-
-        }
-
-        // Background process which won't interrupt the UI thread
-        @Override
-        protected String doInBackground(String... params) {
-            try {
-                HttpResponse response = null;
-                HttpParams httpParameters = new BasicHttpParams();
-                HttpClient client = new DefaultHttpClient(httpParameters);
-                String url = "http://10.0.0.30//parsing/GCM.php?" + "&regID="
-                        + regId;
-                Log.i("Send URL:", url);
-                HttpGet request = new HttpGet(url);
-
-                response = client.execute(request);
-
-                BufferedReader rd = new BufferedReader(new InputStreamReader(
-                        response.getEntity().getContent()));
-
-                String webServiceInfo = "";
-                while ((webServiceInfo = rd.readLine()) != null) {
-                    Log.d("****Status Log***", "Webservice: " + webServiceInfo);
-
+                    // Persist the regID - no need to register again.
+                    storeRegistrationId(MainActivity.this, regId);
+                } catch (IOException ex) {
+                    msg = "Error :" + ex.getMessage();
+                    // If there is an error, don't just keep trying to register.
+                    // Require the user to click a button again, or perform
+                    // exponential back-off.
                 }
-            } catch (Exception e) {
-                e.printStackTrace();
+                return msg;
             }
-            return null;
 
-        }
+            @Override
+            protected void onPostExecute(String msg) {
+                mDisplay.append(msg + "\n");
+            }
+        }.execute(null, null, null);
 
-        // Method which executes code when the background process has finished
-        @Override
-        protected void onPostExecute(String result) {
-            pd.dismiss();
+}
+        /**
+         * Stores the registration ID and app versionCode in the application's
+         * {@code SharedPreferences}.
+         *
+         * @param context application's context.
+         * @param regId registration ID
+         */
+        private void storeRegistrationId(Context context, String regId) {
+            final SharedPreferences prefs = getGCMPreferences(context);
 
-        }
+            SharedPreferences.Editor editor = prefs.edit();
+            editor.putString("r", regId);
+            editor.commit();
+    }
 
+        private SharedPreferences getGCMPreferences(Context context) {
+        // This sample app persists the registration ID in shared preferences, but
+        // how you store the regID in your app is up to you.
+            return getSharedPreferences(MainActivity.class.getSimpleName(),
+                Context.MODE_PRIVATE);
     }
 
 }

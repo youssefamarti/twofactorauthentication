@@ -13,24 +13,13 @@ import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
 import com.google.android.gms.gcm.GoogleCloudMessaging;
-
-/*public class GcmIntentService extends Service {
-    public GcmIntentService() {
-
-
-    }
-
-    @Override
-    public IBinder onBind(Intent intent) {
-        // TODO: Return the communication channel to the service.
-        throw new UnsupportedOperationException("Not yet implemented");
-    }
-}*/
+    
 public class GcmIntentService extends IntentService {
     public static final int NOTIFICATION_ID = 1;
     private NotificationManager mNotificationManager;
     NotificationCompat.Builder builder;
 
+    // Constructor
     public GcmIntentService() {
         super("GcmIntentService");
     }
@@ -89,6 +78,7 @@ public class GcmIntentService extends IntentService {
         PendingIntent contentIntent = PendingIntent.getActivity(this, 0,
                 new Intent(this, MainActivity.class), 0);
 
+        // Builds the notification with the given data
         NotificationCompat.Builder mBuilder =
                 new NotificationCompat.Builder(this)
                         .setSmallIcon(R.drawable.ic_launcher)
@@ -97,6 +87,7 @@ public class GcmIntentService extends IntentService {
                                 .bigText(msg))
                         .setContentText(msg);
 
+        // Displays the notification
         mBuilder.setContentIntent(contentIntent);
         mNotificationManager.notify(NOTIFICATION_ID, mBuilder.build());
     }

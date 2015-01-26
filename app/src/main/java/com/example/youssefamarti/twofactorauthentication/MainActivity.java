@@ -17,8 +17,6 @@ import com.google.android.gms.gcm.GoogleCloudMessaging;
 // Activity which will display the received data
 public class MainActivity extends Activity {
 
-
-
     private String TAG = "** GCMPushDEMOAndroid**"; // Tag ID as String
     private TextView mDisplay;                      // Label which will output received data
     String regId = "";                              // Regisration ID
@@ -36,8 +34,11 @@ public class MainActivity extends Activity {
     }
 
     public void Login(View sender) {
+        // Try to get the registered user by device ID
         try {
             regId = gcm.register(CommonUtilities.getSenderId(this));
+
+            // If not registered in GCM, register him in a background Thread
             if(regId.isEmpty()) {
                 registerInBackground();
             }
@@ -47,17 +48,15 @@ public class MainActivity extends Activity {
             e.printStackTrace();
         }
 
+        // If the regisration failed, print 3 dots
         if(regId.isEmpty()) {
             regId = "...";
-
         }
-
 
         mDisplay.setText("Registration ID: " + regId);
     }
     public void Logout(View sender) {
-
-
+        // Remove the registration ID from the textview
         mDisplay.setText("Not logged on to VPN ");
     }
     /**
@@ -104,9 +103,10 @@ public class MainActivity extends Activity {
 
             @Override
             protected void onPostExecute(String msg) {
+                // Display GCM message
                 mDisplay.append(msg + "\n");
             }
-        }.execute(null, null, null);
+        }.execute(null, null, null); // Start the background thread
 
 }
         /**
@@ -118,7 +118,7 @@ public class MainActivity extends Activity {
          */
         private void storeRegistrationId(Context context, String regId) {
             final SharedPreferences prefs = getGCMPreferences(context);
-
+            // Save the regisration ID in the app config file
             SharedPreferences.Editor editor = prefs.edit();
             editor.putString("r", regId);
             editor.commit();

@@ -12,10 +12,6 @@ import com.google.android.gms.gcm.GoogleCloudMessaging;
 public class MyReceiver extends BroadcastReceiver {
     GoogleCloudMessaging gcm;
     String messageType;
-    // Constructor of class MyReceiver
-    public MyReceiver() {
-
-    }
 
     @Override
     public void onReceive(Context context, Intent intent) {

@@ -6,9 +6,6 @@ import android.os.SystemClock;
 import android.support.v4.content.WakefulBroadcastReceiver;
 import android.util.Log;
 
-/**
- * Created by youssefamarti on 25/01/15.
- */
 public class SimpleWakefulReceiver extends WakefulBroadcastReceiver {
 
 

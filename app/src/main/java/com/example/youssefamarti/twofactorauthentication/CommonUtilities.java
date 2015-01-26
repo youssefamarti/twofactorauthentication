@@ -3,9 +3,7 @@ package com.example.youssefamarti.twofactorauthentication;
 import android.content.Context;
 import android.provider.Settings;
 
-/**
- * Created by youssefamarti on 23/01/15.
- */
+
 public final class CommonUtilities {
     //put here your sender Id
 

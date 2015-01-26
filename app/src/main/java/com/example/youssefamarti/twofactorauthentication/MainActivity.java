@@ -1,22 +1,14 @@
 package com.example.youssefamarti.twofactorauthentication;
 
 
-import java.io.BufferedReader;
+
 import java.io.IOException;
-import java.io.InputStreamReader;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.params.BasicHttpParams;
-import org.apache.http.params.HttpParams;
 import android.app.Activity;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.util.Log;
+import android.view.View;
 import android.widget.TextView;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 
@@ -37,21 +29,37 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-
+        mDisplay = (TextView)findViewById(R.id.ABC);
         gcm = GoogleCloudMessaging.getInstance(this);
+
+
+    }
+
+    public void Login(View sender) {
         try {
-           regId = gcm.register(CommonUtilities.getSenderId(this));
-        if(regId.isEmpty())
-            registerInBackground();
+            regId = gcm.register(CommonUtilities.getSenderId(this));
+            if(regId.isEmpty()) {
+                registerInBackground();
+            }
+
             //if device isn't reg it will reg in background thread with gcm
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        mDisplay = (TextView)findViewById(R.id.ABC);
-        mDisplay.setText("RegId=" + regId);
-    }
+        if(regId.isEmpty()) {
+            regId = "...";
 
+        }
+
+
+        mDisplay.setText("Registration ID: " + regId);
+    }
+    public void Logout(View sender) {
+
+
+        mDisplay.setText("Not logged on to VPN ");
+    }
     /**
      * Registers the application with GCM servers asynchronously.
      * <p>
